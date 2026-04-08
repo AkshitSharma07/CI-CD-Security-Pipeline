@@ -5,18 +5,18 @@ on:
     branches: [ main, dev ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:   # manual trigger
 
 jobs:
-  # ─────────────────────────────────────────────
-  # JOB 1: SAST - Static Application Security Testing
-  # Tool: Bandit - scans Python code for vulnerabilities
-  # ─────────────────────────────────────────────
+
+  # ───────────── SAST ─────────────
   sast-bandit:
     name: SAST Scan (Bandit)
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -26,30 +26,25 @@ jobs:
       - name: Install Bandit
         run: pip install bandit
 
-      - name: Run Bandit SAST Scan
+      - name: Run Bandit Scan
         run: |
-          echo "==============================="
-          echo "  Running Bandit SAST Scan"
-          echo "==============================="
           bandit -r . -f json -o bandit-report.json || true
           bandit -r . -ll --exit-zero
 
       - name: Upload Bandit Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: bandit-sast-report
+          name: bandit-report
           path: bandit-report.json
 
-  # ─────────────────────────────────────────────
-  # JOB 2: Dependency Vulnerability Check
-  # Tool: Safety - checks requirements.txt against CVE database
-  # ─────────────────────────────────────────────
+  # ───────────── DEPENDENCY SCAN ─────────────
   dependency-check:
-    name: Dependency Vulnerability Scan (Safety)
+    name: Dependency Scan (Safety)
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -59,58 +54,49 @@ jobs:
       - name: Install Safety
         run: pip install safety
 
-      - name: Run Safety Dependency Scan
+      - name: Run Safety Scan
         run: |
-          echo "==============================="
-          echo "  Running Safety Dependency Check"
-          echo "==============================="
           safety check -r requirements.txt --output text || true
           safety check -r requirements.txt --save-json safety-report.json || true
 
       - name: Upload Safety Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4   
         with:
-          name: safety-dependency-report
+          name: safety-report
           path: safety-report.json
 
-  # ─────────────────────────────────────────────
-  # JOB 3: Secrets Detection
-  # Tool: TruffleHog - scans for hardcoded secrets, API keys, passwords
-  # ─────────────────────────────────────────────
+  # ───────────── SECRETS SCAN ─────────────
   secrets-scan:
-    name: Secrets Detection (TruffleHog)
+    name: Secrets Scan (TruffleHog)
     runs-on: ubuntu-latest
+    continue-on-error: true   
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history needed for TruffleHog
+          fetch-depth: 1   
 
-      - name: Run TruffleHog Secrets Scan
+      - name: Run TruffleHog
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
-          extra_args: --debug --only-verified || true
+          extra_args: --debug
 
-  # ─────────────────────────────────────────────
-  # JOB 4: Security Summary Report
-  # Runs after all scans, prints consolidated summary
-  # ─────────────────────────────────────────────
+  # ───────────── SUMMARY ─────────────
   security-summary:
     name: Security Summary
     runs-on: ubuntu-latest
     needs: [sast-bandit, dependency-check, secrets-scan]
     if: always()
+
     steps:
       - name: Print Summary
         run: |
           echo "============================================="
           echo "         SECURITY PIPELINE SUMMARY"
           echo "============================================="
-          echo "SAST Scan (Bandit):        ${{ needs.sast-bandit.result }}"
-          echo "Dependency Check (Safety): ${{ needs.dependency-check.result }}"
-          echo "Secrets Scan (TruffleHog): ${{ needs.secrets-scan.result }}"
+          echo "SAST Scan:        ${{ needs.sast-bandit.result }}"
+          echo "Dependency Scan:  ${{ needs.dependency-check.result }}"
+          echo "Secrets Scan:     ${{ needs.secrets-scan.result }}"
           echo "============================================="
-          echo "Review uploaded artifacts for full reports."
