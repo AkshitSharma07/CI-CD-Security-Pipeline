@@ -13,6 +13,7 @@ def main():
 
     print(message)
     print(f"Addition result: {result}")
+    print("hello")
 
 
 if __name__ == "__main__":
