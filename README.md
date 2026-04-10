@@ -129,9 +129,14 @@ fetch-depth: 1 → scans latest commit
 
 ▶️ How to Set Up & Run
 1.Create a new GitHub repository
+
 2.Push all project files
+
 3.Go to the Actions tab
+
 4.Make a small change in app.py and push
+
 5.Watch the pipeline execute in real-time
+
 6.Download reports from the Artifacts section
 
