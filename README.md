@@ -135,10 +135,3 @@ fetch-depth: 1 → scans latest commit
 5.Watch the pipeline execute in real-time
 6.Download reports from the Artifacts section
 
-
-
-This project scans only the latest commit.
-
-For a stricter version that scans the entire Git commit history, refer to:
-
-👉 CI-CD-Security-Pipeline-Strict GitHub Repository
