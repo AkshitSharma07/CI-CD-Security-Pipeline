@@ -4,7 +4,9 @@ This project scans only the latest commit of the repository.
 
 For a stricter version that scans the entire Git commit history (not just current files), refer to:
 
-👉 CI-CD-Security-Pipeline-Strict GitHub Repository
+👉 https://github.com/AkshitSharma07/CI-CD-Security-Pipeline-Strict
+
+
 
 
 🔐 CI/CD Security Pipeline (DevSecOps)
