@@ -121,7 +121,9 @@ fetch-depth: 1 → scans latest commit
 📁 Project Structure
 .
 ├── .github/workflows/security-pipeline.yml
+
 ├── app.py
+
 ├── requirements.txt
 
 
